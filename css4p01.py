@@ -8,6 +8,16 @@ Created on Mon Feb  5 08:10:57 2024
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+import re
+import nltk
+import string
+from nltk.corpus import stopwords
+from nltk.stem import LancasterStemmer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
 
 df = pd.read_csv('movie_dataset.csv')
 print(df)
@@ -36,21 +46,21 @@ print(df.rename({'Runtime (Minutes)': 'Runtime'}, axis='columns'))
 
 # Question 1: What's the highest rated movie?
 
-# df.loc['Rogue One':]
-# print(df)
+df.loc['Rogue One':]
+print(df)
 
-# search_value = 'Rogue One'
-# result = df[df.eq('Rogue One').any(axis=1)]
-# result
-# search_value = 'Trolls'
-# result = df[df.eq('Trolls').any(axis=1)]
-# result
-# search_value = 'Jason Bourne'
-# result = df[df.eq('Jason Bourne').any(axis=1)]
-# result
-# search_value = 'The Dark Knight'
-# result = df[df.eq('The Dark Knight').any(axis=1)]
-# result
+search_value = 'Rogue One'
+result = df[df.eq('Rogue One').any(axis=1)]
+result
+search_value = 'Trolls'
+result = df[df.eq('Trolls').any(axis=1)]
+result
+search_value = 'Jason Bourne'
+result = df[df.eq('Jason Bourne').any(axis=1)]
+result
+search_value = 'The Dark Knight'
+result = df[df.eq('The Dark Knight').any(axis=1)]
+result
 
 # ANSWER: Question 1: Rogue One
 
@@ -73,31 +83,25 @@ print(df)
 82.95637614678898
 """
 #ANSWER Question 2: 70 - 100 Million
-print(df.rename({'Revenue (Millions)': 'Revenue'}, axis='columns'))
-x = df["Revenue (Millions)"].mean()
-df["Revenue (Millions)"].fillna(x, inplace = True) 
-print(df)
 
-print(df.info())
-print(df.describe())
 """
 <class 'pandas.core.frame.DataFrame'>
 RangeIndex: 1000 entries, 0 to 999
 Data columns (total 12 columns):
- #   Column              Non-Null Count  Dtype  
+  #   Column              Non-Null Count  Dtype  
 ---  ------              --------------  -----  
- 0   Rank                1000 non-null   int64  
- 1   Title               1000 non-null   object 
- 2   Genre               1000 non-null   object 
- 3   Description         1000 non-null   object 
- 4   Director            1000 non-null   object 
- 5   Actors              1000 non-null   object 
- 6   Year                1000 non-null   int64  
- 7   Runtime (Minutes)   1000 non-null   int64  
- 8   Rating              1000 non-null   float64
- 9   Votes               1000 non-null   int64  
- 10  Revenue (Millions)  1000 non-null   float64
- 11  Metascore           936 non-null    float64
+  0   Rank                1000 non-null   int64  
+  1   Title               1000 non-null   object 
+  2   Genre               1000 non-null   object 
+  3   Description         1000 non-null   object 
+  4   Director            1000 non-null   object 
+  5   Actors              1000 non-null   object 
+  6   Year                1000 non-null   int64  
+  7   Runtime (Minutes)   1000 non-null   int64  
+  8   Rating              1000 non-null   float64
+  9   Votes               1000 non-null   int64  
+  10  Revenue (Millions)  1000 non-null   float64
+  11  Metascore           936 non-null    float64
 dtypes: float64(3), int64(4), object(5)
 memory usage: 93.9+ KB
 None
@@ -114,6 +118,8 @@ max    1000.000000  2016.000000  ...          936.630000  100.000000
 [8 rows x 7 columns]
 """
 #ANSWER Quetion 2: 70-100 million
+
+
 
 #Question 3
 # x3 = df["Revenue (Millions)"].mean()
@@ -167,8 +173,8 @@ print(statistics.median([8.6, 9, 8.5, 8.8, 8.5]))
 # df["Calories"].fillna(x, inplace = True) 
 # median(Chris_ratings)
 
-# # # df = df.query("Rating == 10")
-# # # print(df["Title"].value_counts().head(10))
+# df = df.query("Rating == 10")
+# print(df["Title"].value_counts().head(10))
 df = df.query("Rating == 8")
 print(df["Title"].value_counts().head(8))
 df = df.query("Rating == 8.1")
@@ -288,18 +294,6 @@ from 44 to 296   -> 575.0% change
 
 #Question 12 and 13
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import re
-import nltk
-import string
-from nltk.corpus import stopwords
-from nltk.stem import LancasterStemmer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, classification_report
 
 df = pd.read_csv('movie_dataset.csv')
 
@@ -541,9 +535,512 @@ Comedy,Family,Fantasy	1
 """
 # ANSWER Q12: The series has a size of 207, as seen on the Variable Explorer.
 
+year_rev = (df[df['Revenue (Millions)'].notnull()][['Year','Revenue (Millions)']].groupby('Year').mean())
+year_rev.plot(Figsize=(10))
 
-# 1.
-# 2.
-# 3.
-# 4.
-# 5
+#Question 13
+#To run the code under Question 13, all of the code ran from lin 42 to line 539 was turned into comments.
+# Attempt 1 as a scatter plot of Revenue (Millions) v Year with r2.
+df = pd.read_csv('movie_dataset.csv')
+
+pd.set_option('display.max_rows',None)
+
+print(df)
+
+x = df["Revenue (Millions)"].mean()
+
+df["Revenue (Millions)"].fillna(x, inplace = True)
+
+x2 = df["Metascore"].mean()
+
+df["Metascore"].fillna(x2, inplace = True)
+
+from sklearn.metrics import r2_score
+import numpy as np
+
+data1 = df["Revenue (Millions)"]
+data2 = df["Year"]
+
+model = np.polyfit(data1, data2, 1)
+predict = np.poly1d(model)
+
+r2 = r2_score(data2, predict(data1))
+print("R-squared:", r2)
+
+plt.scatter(data1, data2, label='Revenue per Year')
+plt.plot(data1, predict(data2), color='red', label='Regression line')
+
+plt.xlabel('Revenue (Millions)')
+plt.ylabel('Years')
+plt.title('Scatter Plot with Regression Line')
+
+plt.legend()
+plt.show()
+"""
+R-squared: 0.013820724940974083 for Revenue per Year Scatter plot.
+model Numpy object array: 0:-0.00390924, 1:2013.11
+"""
+# Attempt 2 on Rating vs Year
+# df = pd.read_csv('movie_dataset.csv')
+
+# pd.set_option('display.max_rows',None)
+
+# print(df)
+
+# x = df["Revenue (Millions)"].mean()
+
+# df["Revenue (Millions)"].fillna(x, inplace = True)
+
+# x2 = df["Metascore"].mean()
+
+# df["Metascore"].fillna(x2, inplace = True)
+
+# from sklearn.metrics import r2_score
+# import numpy as np
+
+# data1 = df["Year"]
+# data2 = df["Rating"]
+
+# model = np.polyfit(data1, data2, 1)
+# predict = np.poly1d(model)
+
+# r2 = r2_score(data2, predict(data1))
+# print("R-squared:", r2)
+
+# plt.scatter(data1, data2, label='Rating per Year')
+# plt.plot(data1, predict(data2), color='red', label='Regression line')
+# min = data2.min()
+# max = data2.max()
+# plt.ylim()
+# plt.xlabel('Year')
+# plt.ylabel('Rating')
+# plt.title('Scatter Plot with Regression Line')
+
+# plt.legend()
+# plt.show()
+"""
+R-squared: 0.044613363141134066 for Rating per Year Scatter plot.
+"""
+# Attempt 3 Votes v Year
+df = pd.read_csv('movie_dataset.csv')
+
+pd.set_option('display.max_rows',None)
+
+print(df)
+
+x = df["Revenue (Millions)"].mean()
+
+df["Revenue (Millions)"].fillna(x, inplace = True)
+
+x2 = df["Metascore"].mean()
+
+df["Metascore"].fillna(x2, inplace = True)
+
+from sklearn.metrics import r2_score
+import numpy as np
+
+data1 = df["Year"]
+data2 = df["Votes"]
+
+model = np.polyfit(data1, data2, 1)
+predict = np.poly1d(model)
+
+r2 = r2_score(data2, predict(data1))
+print("R-squared:", r2)
+
+plt.scatter(data1, data2, label='Votes per Year')
+plt.plot(data1, predict(data2), color='red', label='Regression line')
+min = data2.min()
+max = data2.max()
+plt.ylim()
+plt.xlabel('Year')
+plt.ylabel('Votes')
+plt.title('Scatter Plot with Regression Line')
+
+plt.legend()
+plt.show()
+"""
+R-squared: 0.16966475611954757
+"""
+#Attempt 4 is Revenue (Millions) v Runtime (Minutes)
+
+df = pd.read_csv('movie_dataset.csv')
+
+pd.set_option('display.max_rows',None)
+
+print(df)
+
+x = df["Revenue (Millions)"].mean()
+
+df["Revenue (Millions)"].fillna(x, inplace = True)
+
+x2 = df["Metascore"].mean()
+
+df["Metascore"].fillna(x2, inplace = True)
+
+from sklearn.metrics import r2_score
+import numpy as np
+
+data1 = df["Runtime (Minutes)"]
+data2 = df["Revenue (Millions)"]
+
+model = np.polyfit(data1, data2, 1)
+predict = np.poly1d(model)
+
+r2 = r2_score(data2, predict(data1))
+print("R-squared:", r2)
+
+plt.scatter(data1, data2, label='Revenue per Runtime')
+plt.plot(data1, predict(data2), color='red', label='Regression line')
+min = data2.min()
+max = data2.max()
+plt.ylim()
+plt.xlabel('Runtime (Minutes)')
+plt.ylabel('Revenue (Millions)')
+plt.title('Scatter Plot with Regression Line')
+
+plt.legend()
+plt.show()
+"""
+R-squared: 0.06142169652478224
+"""
+df = pd.read_csv('movie_dataset.csv')
+
+pd.set_option('display.max_rows',None)
+
+print(df)
+
+x = df["Revenue (Millions)"].mean()
+
+df["Revenue (Millions)"].fillna(x, inplace = True)
+
+x2 = df["Metascore"].mean()
+
+df["Metascore"].fillna(x2, inplace = True)
+
+from sklearn.metrics import r2_score
+import numpy as np
+
+data1 = df["Metascore"]
+data2 = df["Revenue (Millions)"]
+
+model = np.polyfit(data1, data2, 1)
+predict = np.poly1d(model)
+
+r2 = r2_score(data2, predict(data1))
+print("R-squared:", r2)
+
+plt.scatter(data1, data2, label='Revenue per Metascore')
+plt.plot(data1, predict(data2), color='red', label='Regression line')
+min = data2.min()
+max = data2.max()
+plt.ylim()
+plt.xlabel('Metascore')
+plt.ylabel('Revenue (Millions)')
+plt.title('Scatter Plot with Regression Line')
+
+plt.legend()
+plt.show()
+"""
+R-squared: 0.017504468907568294
+"""
+df = pd.read_csv('movie_dataset.csv')
+
+pd.set_option('display.max_rows',None)
+
+print(df)
+
+x = df["Revenue (Millions)"].mean()
+
+df["Revenue (Millions)"].fillna(x, inplace = True)
+
+x2 = df["Metascore"].mean()
+
+df["Metascore"].fillna(x2, inplace = True)
+
+from sklearn.metrics import r2_score
+import numpy as np
+
+data1 = df["Votes"]
+data2 = df["Runtime (Minutes)"]
+
+model = np.polyfit(data1, data2, 1)
+predict = np.poly1d(model)
+
+r2 = r2_score(data2, predict(data1))
+print("R-squared:", r2)
+
+plt.scatter(data1, data2, label='Votes per Runtime (Minutes)')
+plt.plot(data1, predict(data2), color='red', label='Regression line')
+min = data2.min()
+max = data2.max()
+plt.ylim()
+plt.xlabel('Votes')
+plt.ylabel('Runtime (Minutes)')
+plt.title('Scatter Plot with Regression Line')
+
+plt.legend()
+plt.show()
+"""
+R-squared: 0.16569926181240913
+"""
+year_rat = (df[df['Revenue (Millions)'].notnull()][['Rating','Revenue (Millions)']].groupby('Rating').mean())
+"""
+Rating	Revenue (Millions)
+1.9	14.17
+2.7	46.15318807339449
+3.2	82.95637614678898
+3.5	82.95637614678898
+3.7	82.95637614678898
+3.9	59.472125382262995
+4.0	20.76
+4.1	166.15
+4.2	82.95637614678898
+4.3	60.80659403669725
+4.4	0.18
+4.5	82.95637614678898
+4.6	42.390550458715595
+4.7	43.26879204892966
+4.8	70.79978211009174
+4.9	122.45519659239842
+5.0	78.34478211009174
+5.1	16.56
+5.2	76.14595496246872
+5.3	57.76409403669724
+5.4	51.3185626911315
+5.5	80.28922346002621
+5.6	47.64032379924447
+5.7	47.86645259938838
+5.8	62.692764643613266
+5.9	59.85081603090295
+6.0	79.54314925899787
+6.1	66.85100029594554
+6.2	80.1121386064964
+6.3	59.15496038365304
+6.4	75.37719659239843
+6.5	61.17431880733945
+6.6	75.91370249017038
+6.7	87.14858084862385
+6.8	60.074743367220435
+6.9	64.95079461379106
+7.0	93.23476366174711
+7.1	74.55285109386027
+7.2	87.28149410222805
+7.3	75.77069353429445
+7.4	104.79088268001111
+7.5	85.9573250327654
+7.6	100.50259259259259
+7.7	89.77528712198438
+7.8	121.74790940366972
+7.9	124.79909254088552
+8.0	133.7136842105263
+8.1	168.3681827805222
+8.2	79.208
+8.3	152.80091087811272
+8.4	119.02159403669725
+8.5	109.85833333333333
+8.6	68.61666666666667
+8.8	151.85999999999999
+9.0	533.32
+
+"""
+year_rat2 = (df[df['Year'].notnull()][['Year','Rating']].groupby('Year').mean())
+"""
+Rating	Year
+1.9	2008.0
+2.7	2012.5
+3.2	2016.0
+3.5	2015.5
+3.7	2016.0
+3.9	2016.0
+4.0	2016.0
+4.1	2015.0
+4.2	2013.0
+4.3	2013.5
+4.4	2009.0
+4.5	2016.0
+4.6	2015.8
+4.7	2014.3333333333333
+4.8	2015.0
+4.9	2013.142857142857
+5.0	2014.0
+5.1	2014.0
+5.2	2012.1818181818182
+5.3	2014.6666666666667
+5.4	2014.4166666666667
+5.5	2011.642857142857
+5.6	2013.3529411764705
+5.7	2014.4285714285713
+5.8	2013.576923076923
+5.9	2013.7894736842106
+6.0	2014.2307692307693
+6.1	2013.6129032258063
+6.2	2012.972972972973
+6.3	2014.5227272727273
+6.4	2012.4285714285713
+6.5	2013.125
+6.6	2011.857142857143
+6.7	2012.875
+6.8	2012.8108108108108
+6.9	2012.8064516129032
+7.0	2012.1739130434783
+7.1	2012.2307692307693
+7.2	2012.5238095238096
+7.3	2012.5238095238096
+7.4	2013.4848484848485
+7.5	2012.5142857142857
+7.6	2011.2222222222222
+7.7	2011.148148148148
+7.8	2011.45
+7.9	2012.5652173913043
+8.0	2011.421052631579
+8.1	2012.3461538461538
+8.2	2011.7
+8.3	2012.4285714285713
+8.4	2011.25
+8.5	2008.5
+8.6	2013.6666666666667
+8.8	2013.0
+9.0	2008.0
+
+and
+
+Year	Rating
+2008	6.7846153846153845
+2009	6.96078431372549
+2010	6.826666666666667
+2011	6.838095238095239
+2012	6.925
+2013	6.812087912087912
+2014	6.837755102040816
+2015	6.602362204724409
+2016	6.436700336700337
+
+"""
+df = pd.read_csv('movie_dataset.csv')
+
+pd.set_option('display.max_rows',None)
+
+print(df)
+
+x = df["Revenue (Millions)"].mean()
+
+df["Revenue (Millions)"].fillna(x, inplace = True)
+
+x2 = df["Metascore"].mean()
+
+df["Metascore"].fillna(x2, inplace = True)
+
+from sklearn.metrics import r2_score
+import numpy as np
+
+data1 = df["Runtime (Minutes)"]
+data2 = df["Year"]
+
+model = np.polyfit(data1, data2, 1)
+predict = np.poly1d(model)
+
+r2 = r2_score(data2, predict(data1))
+print("R-squared:", r2)
+
+plt.scatter(data1, data2, label='Runtime (Minutes) per Year')
+plt.plot(data1, predict(data2), color='red', label='Regression line')
+min = data2.min()
+max = data2.max()
+plt.ylim()
+plt.xlabel('Runtime (Minutes)')
+plt.ylabel('Year')
+plt.title('Scatter Plot with Regression Line')
+
+plt.legend()
+plt.show()
+"""
+R-squared: 0.027191947020231533
+"""
+df = pd.read_csv('movie_dataset.csv')
+
+pd.set_option('display.max_rows',None)
+
+print(df)
+
+x = df["Revenue (Millions)"].mean()
+
+df["Revenue (Millions)"].fillna(x, inplace = True)
+
+x2 = df["Metascore"].mean()
+
+df["Metascore"].fillna(x2, inplace = True)
+
+from sklearn.metrics import r2_score
+import numpy as np
+
+data1 = df["Metascore"]
+data2 = df["Year"]
+
+model = np.polyfit(data1, data2, 1)
+predict = np.poly1d(model)
+
+r2 = r2_score(data2, predict(data1))
+print("R-squared:", r2)
+
+plt.scatter(data1, data2, label='Metascore per Year')
+plt.plot(data1, predict(data2), color='red', label='Regression line')
+min = data2.min()
+max = data2.max()
+plt.ylim()
+plt.xlabel('Metascore')
+plt.ylabel('Year')
+plt.title('Scatter Plot with Regression Line')
+
+plt.legend()
+plt.show()
+"""
+R-squared: 0.005787759255007741
+"""
+df = pd.read_csv('movie_dataset.csv')
+
+pd.set_option('display.max_rows',None)
+
+print(df)
+
+x = df["Revenue (Millions)"].mean()
+
+df["Revenue (Millions)"].fillna(x, inplace = True)
+
+x2 = df["Metascore"].mean()
+
+df["Metascore"].fillna(x2, inplace = True)
+
+from sklearn.metrics import r2_score
+import numpy as np
+
+data1 = df["Revenue (Millions)"]
+data2 = df["Rating"]
+
+model = np.polyfit(data1, data2, 1)
+predict = np.poly1d(model)
+
+r2 = r2_score(data2, predict(data1))
+print("R-squared:", r2)
+
+plt.scatter(data1, data2, label='Revenue (Millions) vs Rating')
+plt.plot(data1, predict(data2), color='red', label='Regression line')
+min = data2.min()
+max = data2.max()
+plt.ylim()
+plt.xlabel('Revenue (Millions)')
+plt.ylabel('Rating')
+plt.title('Scatter Plot with Regression Line')
+
+plt.legend()
+plt.show()
+"""
+
+"""
+#ANSWER Queation 13:
+#1. Votes and the Year have the highest correlation at 0.1697.
+#2. Votes and Runtime have the second highest correlation at 0.1657.
+#3. Revenue and Metascore have a very poor correlation of 0.0175.
+#4. Of all the correlations with the Year, the Metascore has the most poor correation at 0.00578.
+#5. The Runtime will influence how much Revenue a movie produces, and that is what may influence the number of votes the movie receives.
+# 2016 has the highest number of movies produced, however, the highest grossing movies are from the years 2009, 2012 and 2010, respectively. To produce better movies, more revenue needs to be put into movies with a longer runtime. Directors also have to make sure to get more votes from their audience (the viewers). 
